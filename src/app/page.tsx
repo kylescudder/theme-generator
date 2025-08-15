@@ -1,3 +1,4 @@
+// src/components/ThemeGenerator.tsx
 'use client'
 
 import { useState, useEffect, memo, useCallback } from 'react'
@@ -416,8 +417,16 @@ I look forward to hearing from you`)
                 <div className='flex flex-col sm:flex-row gap-4 max-w-2xl'>
                   <Button
                     onClick={downloadTheme}
-                    className='flex-1 bg-primary hover:bg-primary/90 text-primary-foreground theme-transition hover:scale-[1.02] shadow-lg'
+                    // Use Tailwind classes with CSS variables for dynamic colors
+                    className='flex-1 bg-[var(--button-bg)] hover:bg-[var(--button-hover-bg)] text-primary-foreground theme-transition hover:scale-[1.02] shadow-lg'
                     size='lg'
+                    // Set CSS variables dynamically via inline style
+                    style={
+                      {
+                        '--button-bg': colors.primary,
+                        '--button-hover-bg': generateShade(colors.primary)
+                      } as React.CSSProperties
+                    } // Type assertion for custom vars
                   >
                     <Download className='w-4 h-4 mr-2' />
                     Download Theme
@@ -450,7 +459,7 @@ I look forward to hearing from you`)
                 </CardDescription>
               </CardHeader>
               <CardContent className='p-6'>
-                <div className='bg-gray-100 rounded-xl p-8'>
+                <div className='bg-gray-100 rounded-xl p-4'>
                   <div className='mx-auto max-w-sm rounded-2xl'>
                     <PreviewPane colors={colors} />
                   </div>
