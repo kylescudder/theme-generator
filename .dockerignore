@@ -6,3 +6,7 @@ out
 state
 evidence
 *.tsbuildinfo
+secrets
+deploy-spool
+**/__pycache__
+**/*.pyc

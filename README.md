@@ -20,5 +20,6 @@ served by an unprivileged Nginx container.
 ## Herman deployment
 
 See [the deployment instructions](deploy/README.md) for building, routing,
-verification, rollback, and the Netlify cutover. Deployment files are prepared;
-the production cutover still requires Herman and Netlify access.
+CI checks, attested image releases, the Herman deploy service, rollback, and the
+Netlify cutover. Pushes to this branch run CI; only `main` can publish or deploy.
+Production activation still requires host and Cloudflare setup.
