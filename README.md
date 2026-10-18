@@ -1,30 +1,24 @@
-# Follow instructions
+# mpro5 Theme Generator
 
-_Automatically synced with your [v0.app](https://v0.app) deployments_
+Customize primary and secondary colors, preview the mpro5 interface, and download
+the resulting theme as JSON. Theme settings persist in the browser's local storage;
+the app does not require a database or application secrets.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/kyle-scudders-projects/v0-follow-instructions)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/projects/ZlypK9yCsQl)
+## Development
 
-## Overview
+Use Bun 1.4.2, matching `.bun-version` and the Docker build:
 
-This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
+```sh
+bun install --frozen-lockfile
+bun run dev
+```
 
-## Deployment
+`bun run build` and `bun run start` retain the regular Next.js server workflow.
+The Docker build sets `NEXT_STATIC_EXPORT=1` to export the app as static files,
+served by an unprivileged Nginx container.
 
-Your project is live at:
+## Herman deployment
 
-**[https://vercel.com/kyle-scudders-projects/v0-follow-instructions](https://vercel.com/kyle-scudders-projects/v0-follow-instructions)**
-
-## Build your app
-
-Continue building your app on:
-
-**[https://v0.app/chat/projects/ZlypK9yCsQl](https://v0.app/chat/projects/ZlypK9yCsQl)**
-
-## How It Works
-
-1. Create and modify your project using [v0.app](https://v0.app)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+See [the deployment instructions](deploy/README.md) for building, routing,
+verification, rollback, and the Netlify cutover. Deployment files are prepared;
+the production cutover still requires Herman and Netlify access.
