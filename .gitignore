@@ -25,3 +25,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+/state/
+/evidence/
+/secrets/
+/deploy-spool/
+__pycache__/
+*.pyc

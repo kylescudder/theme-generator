@@ -1,0 +1,36 @@
+name: theme-generator
+services:
+  web:
+    image: ${THEME_GENERATOR_IMAGE:?Set THEME_GENERATOR_IMAGE to a release image}
+    init: true
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 64m
+    cpus: 0.5
+    pids_limit: 64
+    networks:
+      platform-web:
+        aliases: [theme-generator]
+    healthcheck:
+      test:
+        [
+          CMD-SHELL,
+          "wget -qO- http://127.0.0.1:8080/ | grep -q 'mpro5 Theme Generator'"
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+networks:
+  platform-web:
+    external: true

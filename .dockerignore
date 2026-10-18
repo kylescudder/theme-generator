@@ -1,0 +1,12 @@
+.git
+.next
+node_modules
+out
+.env*
+state
+evidence
+*.tsbuildinfo
+secrets
+deploy-spool
+**/__pycache__
+**/*.pyc

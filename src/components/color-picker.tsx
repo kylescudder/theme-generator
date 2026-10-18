@@ -5,10 +5,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Sparkles } from 'lucide-react'
 import { HexColorPicker } from 'react-colorful'
-import { useThemeStore } from '@/store/themeStore'
+import { useThemeStore, type ThemeColors } from '@/store/themeStore'
 
 interface ColorPickerProps {
-  id: keyof ReturnType<typeof useThemeStore>['colors']
+  id: keyof ThemeColors
   label: string
   description: string
   isMain?: boolean

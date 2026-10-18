@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches-ignore: [main]
+  pull_request:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Typecheck, format and build with the frozen Bun lockfile
+        run: docker build --target build -t theme-generator:checks .
+      - name: Verify signed webhook and queue bounds
+        run: docker run --rm theme-generator:checks bun run test:receiver
+      - name: Verify provenance, queue processing and failed-release rollback
+        run: python3 -B -m unittest discover -s deploy -p 'test_*.py' -v
+      - name: Build production runtime
+        run: docker build --build-arg THEME_GENERATOR_REVISION="$GITHUB_SHA" -t theme-generator:ci .
+      - name: Exercise the restricted production container
+        run: |
+          trap 'docker logs theme-generator-ci; docker rm -f theme-generator-ci' EXIT
+          docker run -d --name theme-generator-ci --read-only \
+            --tmpfs /tmp:rw,size=16m,mode=1777 --cap-drop ALL \
+            --security-opt no-new-privileges:true --memory 64m --cpus 0.5 \
+            --pids-limit 64 -p 127.0.0.1:8080:8080 theme-generator:ci
+          python3 -B deploy/verify-runtime.py http://127.0.0.1:8080 "$GITHUB_SHA"

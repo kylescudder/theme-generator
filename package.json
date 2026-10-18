@@ -2,8 +2,12 @@
   "name": "my-v0-project",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "bun@1.4.2",
   "scripts": {
     "build": "next build",
+    "typecheck": "tsc --noEmit",
+    "test:deploy": "python3 -B -m unittest discover -s deploy -p 'test_*.py' -v",
+    "test:receiver": "bun test deploy/receiver/server.test.mjs",
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start",
