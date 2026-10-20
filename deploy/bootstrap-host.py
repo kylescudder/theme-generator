@@ -76,8 +76,8 @@ def main():
         subprocess.run(['gh', 'variable', 'set', name, '--body', value, '--repo', REPO], check=True)
     subprocess.run(['docker', 'compose', '-f', 'deploy/compose.deploy-hook.yaml',
                     '--env-file', '.env.deploy-hook', 'up', '-d', '--wait'], cwd=APP, check=True)
-    subprocess.run(['python3', '-B', 'deploy/host-deploy.py', '--install', args.host], cwd=APP, check=True)
-    print('Receiver and host deploy service installed; automatic deployment remains paused.')
+    print('Register this app in /Users/kyle/platform/deploy-core/apps.json before enabling releases.')
+    print('Receiver installed; automatic deployment remains paused.')
     print('Complete Cloudflare Access/hostname setup in deploy/README.md before enabling deployment.')
 
 
