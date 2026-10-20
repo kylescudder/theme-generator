@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install app-specific deploy pieces from a reviewed checkout on Herman."""
+"""Install app-specific deploy pieces from a reviewed checkout on the host."""
 import argparse
 import json
 import os
@@ -16,6 +16,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--base-url', required=True, help='Existing public HTTPS origin to retain')
     parser.add_argument('--deploy-url', required=True, help='HTTPS URL ending /hooks/theme-generator')
+    parser.add_argument('--host', required=True, help="This host's LocalHostName; anything else is refused")
     args = parser.parse_args()
     for value, expected_path in [(args.base_url, ''), (args.deploy_url, '/hooks/theme-generator')]:
         url = urlsplit(value)
@@ -23,8 +24,8 @@ def main():
                 or url.path != expected_path or url.query or url.fragment):
             parser.error('Use HTTPS origins without credentials; deploy URL must end /hooks/theme-generator.')
     hostname = subprocess.check_output(['/usr/sbin/scutil', '--get', 'LocalHostName']).decode().strip()
-    if hostname != 'herman' or APP != Path('/Users/kyle/platform/apps/theme-generator'):
-        raise SystemExit('Run on Herman from /Users/kyle/platform/apps/theme-generator as the Colima owner.')
+    if hostname != args.host or APP != Path('/Users/kyle/platform/apps/theme-generator'):
+        raise SystemExit('Run on the host from /Users/kyle/platform/apps/theme-generator as the Colima owner.')
     os.umask(0o077)
     subprocess.run(['docker', 'network', 'inspect', 'platform-web'], stdout=subprocess.DEVNULL, check=True)
     # Pause deployment while setup is incomplete, including on a repeated bootstrap.
@@ -75,7 +76,7 @@ def main():
         subprocess.run(['gh', 'variable', 'set', name, '--body', value, '--repo', REPO], check=True)
     subprocess.run(['docker', 'compose', '-f', 'deploy/compose.deploy-hook.yaml',
                     '--env-file', '.env.deploy-hook', 'up', '-d', '--wait'], cwd=APP, check=True)
-    subprocess.run(['python3', '-B', 'deploy/install-launchd.py'], cwd=APP, check=True)
+    subprocess.run(['python3', '-B', 'deploy/host-deploy.py', '--install', args.host], cwd=APP, check=True)
     print('Receiver and host deploy service installed; automatic deployment remains paused.')
     print('Complete Cloudflare Access/hostname setup in deploy/README.md before enabling deployment.')
 

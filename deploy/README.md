@@ -1,4 +1,4 @@
-# Theme Generator on Herman
+# Theme Generator on the host
 
 This follows Office Tracker's release pattern: GitHub-hosted native AMD64/ARM64
 builds, an immutable GHCR digest with provenance, Cloudflare Access Service Auth,
@@ -6,6 +6,13 @@ a restricted queue receiver, and an event-driven LaunchAgent running as Colima's
 owner. The app serves a static Next.js export at `theme-generator:8080` on the
 existing `platform-web` network. It needs no database, runtime secrets, host
 ports, self-hosted Actions runner, or Docker socket in the receiver.
+
+## Deployer
+
+`deploy/host-deploy.py` holds this app's settings and hooks; the
+shared flow is `deploy/deploy_core.py`, vendored unchanged from
+`kylescudder/deploy-core` (see `deploy/deploy_core.lock`). Change the core
+there and sync it; CI fails if the vendored copy is edited here.
 
 ## CI and releases
 
@@ -27,7 +34,7 @@ pinned versions in Office Tracker. The public repository can use GitHub's
 [official container provenance action](https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations).
 No signing key or extra package-manager lockfile is needed.
 
-Herman independently verifies the GHCR bundle against this repository,
+The host independently verifies the GHCR bundle against this repository,
 `.github/workflows/release.yml`, `refs/heads/main`, GitHub-hosted runners, and the
 requested source commit before pulling or starting an image. A manual digest
 rollback also verifies that the image label matches its attested source commit.
@@ -41,17 +48,17 @@ stopped without pinning the broken candidate. Success pins `.env` and records
 
 The branch supplies the CI/CD implementation. Actual host installation, public
 hostname selection and Netlify cutover still require authenticated access to
-Herman and Netlify; those operations have not been performed.
+The host and Netlify; those operations have not been performed.
 
 From a reviewed checkout at `/Users/kyle/platform/apps/theme-generator`, as
-Colima's owner on **Herman**, first inspect `/Users/kyle/platform/runbook.md`.
+Colima's owner on **the host**, first inspect `/Users/kyle/platform/runbook.md`.
 Keep the existing Netlify custom domain so browser local storage remains on the
 same origin. Colors saved on an old `netlify.app` origin cannot migrate with DNS.
 
 Choose the public HTTPS origin to retain and a dedicated deploy hostname, then:
 
 ```sh
-python3 -B deploy/bootstrap-herman.py \
+python3 -B deploy/bootstrap-host.py --host <host LocalHostName> \
   --base-url https://YOUR_PUBLIC_HOSTNAME \
   --deploy-url https://YOUR_DEPLOY_HOSTNAME/hooks/theme-generator
 ```
@@ -112,7 +119,7 @@ gh workflow run release.yml --ref main --repo kylescudder/theme-generator
 
 Check public HTTPS and run `python3 -B deploy/verify-runtime.py https://YOUR_PUBLIC_HOSTNAME <commit-sha>`.
 In a real browser, verify color changes, live preview, reload persistence and the
-actual JSON download at desktop/mobile widths. Only after the Herman deployment
+actual JSON download at desktop/mobile widths. Only after the host deployment
 passes, delete the matching Netlify project and verify it is absent, then recheck
 the public hostname. Do not delete the old project while the new route is unproven.
 
@@ -121,15 +128,15 @@ the public hostname. Do not delete the old project while the new route is unprov
 ```sh
 cd /Users/kyle/platform/apps/theme-generator
 docker compose --env-file .env ps
-launchctl print gui/501/com.herman.theme-generator-deploy
+launchctl print gui/501/com.kylescudder.theme-generator-deploy
 tail -n 100 state/deploy.log
-./deploy/herman-deploy.sh sha256:PREVIOUS_ATTESTED_MAIN_DIGEST
+./deploy/host-deploy.sh sha256:PREVIOUS_ATTESTED_MAIN_DIGEST
 ```
 
 Manual rollback accepts an exact digest, verifies its provenance, waits for
 health, and pins it exactly like an automatic release. Retain previous images.
 No data migrations or server data backups are needed for this static app.
-Include private deployment configuration, queue and state in Herman's established
+Include private deployment configuration, queue and state in the host's established
 encrypted NAS backup. Stop automatic releases with:
 
 ```sh
