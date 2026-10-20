@@ -29,6 +29,8 @@ class Deployment(unittest.TestCase):
         self.env.chmod(0o600)
         self.commands = []
         self.running = 'previous'
+        self.container_running = True
+        self.health = 'healthy'
         self.reject_verification = False
         self.unhealthy = set()
         self.started = []
@@ -65,10 +67,15 @@ class Deployment(unittest.TestCase):
             if action[0] == 'up' and image in self.unhealthy:
                 return subprocess.CompletedProcess(args, 1, b'', b'health failed')
         if args[:2] == ['docker', 'inspect']:
-            result = '|'.join(json.dumps(value) for value in [
-                self.running, {'Running': True, 'Health': {'Status': 'healthy'}},
-                {'org.opencontainers.image.revision': REVISION}
-            ]).encode()
+            # Shaped like `docker inspect <container>`, including a failed health check's
+            # Bun output, which contains '|' and newlines.
+            log = [{'ExitCode': 1, 'Output': 'error: boom\n3 | for (const path of paths) {\n|\n'}]
+            result = json.dumps([{
+                'Id': 'container',
+                'Config': {'Image': self.running, 'Labels': {'org.opencontainers.image.revision': REVISION}},
+                'State': {'Status': 'running' if self.container_running else 'exited',
+                          'Running': self.container_running, 'Health': {'Status': self.health, 'Log': log}},
+            }]).encode()
         if args[:3] == ['docker', 'image', 'inspect']:
             result = json.dumps({'org.opencontainers.image.revision': self.revision}).encode()
         return subprocess.CompletedProcess(args, 0, result, b'')
@@ -118,6 +125,33 @@ class Deployment(unittest.TestCase):
             deploy.deploy(DIGEST, REVISION)
         self.assertEqual(self.stopped, [CANDIDATE])
         self.assertEqual(self.env.read_text(), '')
+
+    def test_stopped_failed_candidate_is_replaced_and_never_restored(self):
+        self.running = 'sha256-failed-earlier'
+        self.container_running = False
+        self.health = 'unhealthy'
+        self.env.write_text('')
+        self.unhealthy.add(CANDIDATE)
+        with self.assertRaisesRegex(deploy.Error, 'Candidate was not healthy'):
+            deploy.deploy(DIGEST, REVISION)
+        self.assertEqual(self.started, [CANDIDATE])
+        self.assertEqual(self.stopped, [CANDIDATE])
+        self.unhealthy.clear()
+        deploy.deploy(DIGEST, REVISION)
+        self.assertEqual(self.started, [CANDIDATE, CANDIDATE])
+        self.assertIn(CANDIDATE, self.env.read_text())
+
+    def test_stopped_container_of_the_requested_digest_is_started_not_acknowledged(self):
+        self.running = CANDIDATE
+        self.container_running = False
+        deploy.deploy(DIGEST, REVISION)
+        self.assertEqual(self.started, [CANDIDATE])
+
+    def test_unparseable_inspect_output_is_reported_without_echoing_it(self):
+        with patch.object(deploy, 'run', return_value=b'3 | secret-looking text'):
+            with self.assertRaises(deploy.Error) as caught:
+                deploy.inspect_current('container')
+        self.assertNotIn('secret', str(caught.exception))
 
     def test_rollback_failure_is_reported_without_pinning_success(self):
         self.unhealthy.update([CANDIDATE, 'previous'])
