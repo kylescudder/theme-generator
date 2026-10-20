@@ -1,5 +1,20 @@
 # Theme Generator on the host
 
+## Shared deployment service
+
+This app is registered as `theme-generator` in the central deployment registry
+`/Users/kyle/platform/deploy-core/apps.json`. LaunchAgent
+`com.kylescudder.deploy-core` runs the single installed engine. Application hooks
+are `deploy/hooks.py`; the receiver, credentials, queues,
+state and database contracts below remain app-specific. Manual deployment uses
+`./deploy/host-deploy.sh sha256:<digest>`.
+
+Engine updates, application registration, failure inspection and service rollback
+are documented in [deploy-core](https://github.com/kylescudder/deploy-core).
+There are no vendored engine files, lock files or sync PRs. Do not install an
+app-specific LaunchAgent. Apply future engine changes once through the central service.
+
+
 This follows Office Tracker's release pattern: GitHub-hosted native AMD64/ARM64
 builds, an immutable GHCR digest with provenance, Cloudflare Access Service Auth,
 a restricted queue receiver, and an event-driven LaunchAgent running as Colima's
@@ -9,10 +24,7 @@ ports, self-hosted Actions runner, or Docker socket in the receiver.
 
 ## Deployer
 
-`deploy/host-deploy.py` holds this app's settings and hooks; the
-shared flow is `deploy/deploy_core.py`, vendored unchanged from
-`kylescudder/deploy-core` (see `deploy/deploy_core.lock`). Change the core
-there and sync it; CI fails if the vendored copy is edited here.
+`application hooks` holds this app's settings and hooks; the
 
 ## CI and releases
 
@@ -128,7 +140,7 @@ the public hostname. Do not delete the old project while the new route is unprov
 ```sh
 cd /Users/kyle/platform/apps/theme-generator
 docker compose --env-file .env ps
-launchctl print gui/501/com.kylescudder.theme-generator-deploy
+launchctl print gui/501/com.kylescudder.deploy-core
 tail -n 100 state/deploy.log
 ./deploy/host-deploy.sh sha256:PREVIOUS_ATTESTED_MAIN_DIGEST
 ```

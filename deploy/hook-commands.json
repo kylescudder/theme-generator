@@ -1,0 +1,14 @@
+[
+  [
+    "compose",
+    [
+      "exec",
+      "-T",
+      "web",
+      "sh",
+      "-c",
+      "wget -qO- http://127.0.0.1:8080/ | grep -q 'mpro5 Theme Generator'"
+    ],
+    "ghcr.io/kylescudder/theme-generator@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  ]
+]
