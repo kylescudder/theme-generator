@@ -14,7 +14,6 @@ are documented in [deploy-core](https://github.com/kylescudder/deploy-core).
 There are no vendored engine files, lock files or sync PRs. Do not install an
 app-specific LaunchAgent. Apply future engine changes once through the central service.
 
-
 This follows Office Tracker's release pattern: GitHub-hosted native AMD64/ARM64
 builds, an immutable GHCR digest with provenance, Cloudflare Access Service Auth,
 a restricted queue receiver, and an event-driven LaunchAgent running as Colima's
