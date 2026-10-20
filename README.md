@@ -17,9 +17,9 @@ bun run dev
 The Docker build sets `NEXT_STATIC_EXPORT=1` to export the app as static files,
 served by an unprivileged Nginx container.
 
-## Herman deployment
+## Host deployment
 
 See [the deployment instructions](deploy/README.md) for building, routing,
-CI checks, attested image releases, the Herman deploy service, rollback, and the
+CI checks, attested image releases, the host deploy service, rollback, and the
 Netlify cutover. Pushes to this branch run CI; only `main` can publish or deploy.
 Production activation still requires host and Cloudflare setup.
