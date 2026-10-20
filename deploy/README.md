@@ -24,7 +24,7 @@ ports, self-hosted Actions runner, or Docker socket in the receiver.
 
 ## Deployer
 
-`application hooks` holds this app's settings and hooks; the
+Application-specific behavior is in `hooks.py`; deployment definitions are central.
 
 ## CI and releases
 
@@ -76,7 +76,7 @@ python3 -B deploy/bootstrap-host.py --host <host LocalHostName> \
 ```
 
 Bootstrap checks the host/checkout, pauses deployments, creates protected private
-files without overwriting existing ones, installs a receiver and LaunchAgent,
+files without overwriting existing ones, installs the receiver; register the app centrally,
 configures a `main` branch policy for GitHub's `production` environment, uploads
 `DEPLOY_WEBHOOK_SECRET` through stdin, and sets the two URL variables. GitHub and
 GHCR credentials must already work for the host's user. Repeated bootstrap leaves
