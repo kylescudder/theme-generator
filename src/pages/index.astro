@@ -1,0 +1,12 @@
+---
+import Layout from '../layouts/Layout.astro'
+import ThemeGenerator from '../components/theme-generator'
+---
+
+<Layout>
+  <!-- The theme lives in localStorage, so render it in the browser only -->
+  <ThemeGenerator client:only='react' />
+  <noscript>
+    <p class='p-8 text-center'>mpro5 Theme Generator needs JavaScript.</p>
+  </noscript>
+</Layout>

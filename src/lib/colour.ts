@@ -1,0 +1,64 @@
+function hexToRgb(hex: string) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+  return result
+    ? {
+        r: Number.parseInt(result[1], 16),
+        g: Number.parseInt(result[2], 16),
+        b: Number.parseInt(result[3], 16)
+      }
+    : null
+}
+
+function rgbToHex(r: number, g: number, b: number) {
+  return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)
+}
+
+function getLuminance(r: number, g: number, b: number) {
+  const [rs, gs, bs] = [r, g, b].map((c) => {
+    c = c / 255
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+  })
+  return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs
+}
+
+export function getContrastRatio(color1: string, color2: string) {
+  const rgb1 = hexToRgb(color1)
+  const rgb2 = hexToRgb(color2)
+  if (!rgb1 || !rgb2) return 1
+
+  const lum1 = getLuminance(rgb1.r, rgb1.g, rgb1.b)
+  const lum2 = getLuminance(rgb2.r, rgb2.g, rgb2.b)
+
+  const brightest = Math.max(lum1, lum2)
+  const darkest = Math.min(lum1, lum2)
+
+  return (brightest + 0.05) / (darkest + 0.05)
+}
+
+export function getOptimalContrast(baseColor: string) {
+  const rgb = hexToRgb(baseColor)
+  if (!rgb) return '#ffffff'
+
+  const luminance = getLuminance(rgb.r, rgb.g, rgb.b)
+  return luminance > 0.5 ? '#000000' : '#ffffff'
+}
+
+function adjustColor(hex: string, amount: number) {
+  const rgb = hexToRgb(hex)
+  if (!rgb) return hex
+
+  const adjust = (color: number) => {
+    const adjusted = color + amount
+    return Math.max(0, Math.min(255, adjusted))
+  }
+
+  return rgbToHex(adjust(rgb.r), adjust(rgb.g), adjust(rgb.b))
+}
+
+export function generateShade(hex: string) {
+  return adjustColor(hex, -30)
+}
+
+export function generateTint(hex: string) {
+  return adjustColor(hex, 30)
+}

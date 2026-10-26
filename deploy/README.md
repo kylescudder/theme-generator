@@ -17,7 +17,7 @@ app-specific LaunchAgent. Apply future engine changes once through the central s
 This follows Office Tracker's release pattern: GitHub-hosted native AMD64/ARM64
 builds, an immutable GHCR digest with provenance, Cloudflare Access Service Auth,
 a restricted queue receiver, and an event-driven LaunchAgent running as Colima's
-owner. The app serves a static Next.js export at `theme-generator:8080` on the
+owner. The app serves static Astro output from Caddy at `theme-generator:8080` on the
 existing `platform-web` network. It needs no database, runtime secrets, host
 ports, self-hosted Actions runner, or Docker socket in the receiver.
 
@@ -39,7 +39,7 @@ Application-specific behavior is in `hooks.py`; deployment definitions are centr
   in `X-Theme-Generator-Revision`. Health responses use `Cache-Control: no-store`.
   A branch dispatch can run checks but cannot publish or deploy.
 
-All application and receiver builds/tests use Bun 1.4.2, matching `.bun-version`,
+All application and receiver builds/tests use Bun 1.4.4, matching `.bun-version`,
 `packageManager`, Dockerfile and receiver Compose. Action references match the
 pinned versions in Office Tracker. The public repository can use GitHub's
 [official container provenance action](https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations).

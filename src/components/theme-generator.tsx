@@ -1,6 +1,3 @@
-// src/components/ThemeGenerator.tsx
-'use client'
-
 import { useState, useEffect, memo, useCallback } from 'react'
 import {
   Card,
@@ -17,74 +14,13 @@ import { Download, Mail, AlertTriangle, Palette, Eye } from 'lucide-react'
 import { PreviewPane } from '@/components/preview-pane'
 import { ColorPicker } from '@/components/color-picker'
 import { useThemeStore } from '@/store/themeStore'
+import {
+  generateShade,
+  generateTint,
+  getContrastRatio,
+  getOptimalContrast
+} from '@/lib/colour'
 
-// -------------------- Utility Functions --------------------
-function hexToRgb(hex: string) {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-  return result
-    ? {
-        r: Number.parseInt(result[1], 16),
-        g: Number.parseInt(result[2], 16),
-        b: Number.parseInt(result[3], 16)
-      }
-    : null
-}
-
-function rgbToHex(r: number, g: number, b: number) {
-  return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)
-}
-
-function getLuminance(r: number, g: number, b: number) {
-  const [rs, gs, bs] = [r, g, b].map((c) => {
-    c = c / 255
-    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
-  })
-  return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs
-}
-
-function getContrastRatio(color1: string, color2: string) {
-  const rgb1 = hexToRgb(color1)
-  const rgb2 = hexToRgb(color2)
-  if (!rgb1 || !rgb2) return 1
-
-  const lum1 = getLuminance(rgb1.r, rgb1.g, rgb1.b)
-  const lum2 = getLuminance(rgb2.r, rgb2.g, rgb2.b)
-
-  const brightest = Math.max(lum1, lum2)
-  const darkest = Math.min(lum1, lum2)
-
-  return (brightest + 0.05) / (darkest + 0.05)
-}
-
-function getOptimalContrast(baseColor: string) {
-  const rgb = hexToRgb(baseColor)
-  if (!rgb) return '#ffffff'
-
-  const luminance = getLuminance(rgb.r, rgb.g, rgb.b)
-  return luminance > 0.5 ? '#000000' : '#ffffff'
-}
-
-function adjustColor(hex: string, amount: number) {
-  const rgb = hexToRgb(hex)
-  if (!rgb) return hex
-
-  const adjust = (color: number) => {
-    const adjusted = color + amount
-    return Math.max(0, Math.min(255, adjusted))
-  }
-
-  return rgbToHex(adjust(rgb.r), adjust(rgb.g), adjust(rgb.b))
-}
-
-function generateShade(hex: string) {
-  return adjustColor(hex, -30)
-}
-
-function generateTint(hex: string) {
-  return adjustColor(hex, 30)
-}
-
-// -------------------- Component --------------------
 export default function ThemeGenerator() {
   const colors = useThemeStore((state) => state.colors)
   const setColors = useThemeStore((state) => state.setColors)
@@ -201,33 +137,33 @@ I look forward to hearing from you`)
   )
 
   return (
-    <div className='min-h-screen gradient-bg'>
-      <div className='max-w-7xl mx-auto px-4 py-8'>
+    <div className='gradient-bg min-h-screen'>
+      <div className='mx-auto max-w-7xl px-4 py-8'>
         {/* HEADER */}
-        <div className='text-center mb-12'>
-          <div className='flex items-center justify-center gap-3 mb-4'>
-            <div className='p-3 bg-primary/10 rounded-2xl'>
-              <Palette className='w-8 h-8 text-primary' />
+        <div className='mb-12 text-center'>
+          <div className='mb-4 flex items-center justify-center gap-3'>
+            <div className='rounded-2xl bg-primary/10 p-3'>
+              <Palette className='h-8 w-8 text-primary' />
             </div>
-            <h1 className='text-4xl lg:text-5xl font-bold text-foreground font-[family-name:var(--font-heading)]'>
+            <h1 className='font-[family-name:var(--font-heading)] text-4xl font-bold text-foreground lg:text-5xl'>
               mpro5 Theme Generator
             </h1>
           </div>
-          <p className='text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed'>
+          <p className='mx-auto max-w-2xl text-lg leading-relaxed text-muted-foreground'>
             Create Your Unique Theme: Tailor the perfect look for your
             workspace. Use the color pickers to customize your theme and preview
             changes in real-time.
           </p>
         </div>
 
-        <div className='grid grid-cols-1 lg:grid-cols-2 gap-12 items-start'>
+        <div className='grid grid-cols-1 items-start gap-12 lg:grid-cols-2'>
           {/* LEFT COLUMN */}
           <div className='space-y-8'>
             {/* PRIMARY */}
             <Card className='gradient-card theme-transition hover:shadow-lg'>
               <CardHeader className='pb-4'>
-                <CardTitle className='flex items-center gap-2 text-xl font-[family-name:var(--font-heading)]'>
-                  <div className='w-2 h-8 bg-primary rounded-full' />
+                <CardTitle className='flex items-center gap-2 font-[family-name:var(--font-heading)] text-xl'>
+                  <div className='h-8 w-2 rounded-full bg-primary' />
                   Primary Colors
                 </CardTitle>
                 <CardDescription className='text-base'>
@@ -236,7 +172,7 @@ I look forward to hearing from you`)
                 </CardDescription>
               </CardHeader>
               <CardContent className='space-y-6'>
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
                   <ColorPickerField
                     id='primary'
                     label='Primary'
@@ -250,7 +186,7 @@ I look forward to hearing from you`)
                     description='Text color that appears on primary backgrounds for optimal readability'
                   />
                 </div>
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
                   <ColorPickerField
                     id='primaryShade'
                     label='Primary Shade'
@@ -268,8 +204,8 @@ I look forward to hearing from you`)
             {/* SECONDARY */}
             <Card className='gradient-card theme-transition hover:shadow-lg'>
               <CardHeader className='pb-4'>
-                <CardTitle className='flex items-center gap-2 text-xl font-[family-name:var(--font-heading)]'>
-                  <div className='w-2 h-8 bg-secondary rounded-full' />
+                <CardTitle className='flex items-center gap-2 font-[family-name:var(--font-heading)] text-xl'>
+                  <div className='h-8 w-2 rounded-full bg-secondary' />
                   Secondary Colors
                 </CardTitle>
                 <CardDescription className='text-base'>
@@ -277,7 +213,7 @@ I look forward to hearing from you`)
                 </CardDescription>
               </CardHeader>
               <CardContent className='space-y-6'>
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
                   <ColorPickerField
                     id='secondary'
                     label='Secondary'
@@ -291,7 +227,7 @@ I look forward to hearing from you`)
                     description='Text color that appears on secondary backgrounds'
                   />
                 </div>
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
                   <ColorPickerField
                     id='secondaryShade'
                     label='Secondary Shade'
@@ -311,13 +247,13 @@ I look forward to hearing from you`)
               <Alert className='border-destructive/20 bg-destructive/5'>
                 <AlertTriangle className='h-5 w-5 text-destructive' />
                 <AlertDescription className='text-sm'>
-                  <div className='font-medium mb-2'>
+                  <div className='mb-2 font-medium'>
                     Accessibility Concerns:
                   </div>
                   <ul className='space-y-1'>
                     {warnings.map((warning, index) => (
                       <li key={index} className='flex items-start gap-2'>
-                        <span className='w-1 h-1 bg-destructive rounded-full mt-2 flex-shrink-0' />
+                        <span className='mt-2 h-1 w-1 flex-shrink-0 rounded-full bg-destructive' />
                         {warning}
                       </li>
                     ))}
@@ -329,7 +265,7 @@ I look forward to hearing from you`)
             {/* DESCRIPTION GRID */}
             <Card className='gradient-card theme-transition hover:shadow-lg'>
               <CardHeader className='pb-4'>
-                <CardTitle className='flex items-center gap-2 text-xl font-[family-name:var(--font-heading)]'>
+                <CardTitle className='flex items-center gap-2 font-[family-name:var(--font-heading)] text-xl'>
                   Description Guide
                 </CardTitle>
                 <CardDescription className='text-base'>
@@ -337,7 +273,7 @@ I look forward to hearing from you`)
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className='grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm'>
+                <div className='grid grid-cols-1 gap-x-6 gap-y-3 text-sm sm:grid-cols-2'>
                   <div className='font-semibold'>Field</div>
                   <div className='font-semibold'>Description</div>
 
@@ -378,8 +314,8 @@ I look forward to hearing from you`)
             {/* EXPORT */}
             <Card className='gradient-card theme-transition hover:shadow-lg'>
               <CardHeader className='pb-4'>
-                <CardTitle className='flex items-center gap-2 text-xl font-[family-name:var(--font-heading)]'>
-                  <Download className='w-5 h-5 text-primary' />
+                <CardTitle className='flex items-center gap-2 font-[family-name:var(--font-heading)] text-xl'>
+                  <Download className='h-5 w-5 text-primary' />
                   Export & Contact
                 </CardTitle>
                 <CardDescription className='text-base'>
@@ -387,7 +323,7 @@ I look forward to hearing from you`)
                 </CardDescription>
               </CardHeader>
               <CardContent className='space-y-6'>
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl'>
+                <div className='grid max-w-2xl grid-cols-1 gap-4 md:grid-cols-2'>
                   <div>
                     <Label htmlFor='userName' className='text-sm font-medium'>
                       Your Name
@@ -397,7 +333,7 @@ I look forward to hearing from you`)
                       value={userName}
                       onChange={(e) => setUserName(e.target.value)}
                       placeholder='Enter your name'
-                      className='mt-2 theme-transition focus:border-primary'
+                      className='theme-transition mt-2 focus:border-primary'
                     />
                   </div>
                   <div>
@@ -409,16 +345,16 @@ I look forward to hearing from you`)
                       value={orgName}
                       onChange={(e) => setOrgName(e.target.value)}
                       placeholder='Enter your organization'
-                      className='mt-2 theme-transition focus:border-primary'
+                      className='theme-transition mt-2 focus:border-primary'
                     />
                   </div>
                 </div>
 
-                <div className='flex flex-col sm:flex-row gap-4 max-w-2xl'>
+                <div className='flex max-w-2xl flex-col gap-4 sm:flex-row'>
                   <Button
                     onClick={downloadTheme}
                     // Use Tailwind classes with CSS variables for dynamic colors
-                    className='flex-1 bg-[var(--button-bg)] hover:bg-[var(--button-hover-bg)] text-primary-foreground theme-transition hover:scale-[1.02] shadow-lg'
+                    className='theme-transition flex-1 bg-[var(--button-bg)] text-primary-foreground shadow-lg hover:scale-[1.02] hover:bg-[var(--button-hover-bg)]'
                     size='lg'
                     // Set CSS variables dynamically via inline style
                     style={
@@ -428,17 +364,17 @@ I look forward to hearing from you`)
                       } as React.CSSProperties
                     } // Type assertion for custom vars
                   >
-                    <Download className='w-4 h-4 mr-2' />
+                    <Download className='mr-2 h-4 w-4' />
                     Download Theme
                   </Button>
                   <Button
                     onClick={openEmailClient}
                     variant='outline'
-                    className='flex-1 border-primary/20 hover:bg-primary/5 hover:border-primary theme-transition hover:scale-[1.02] bg-transparent'
+                    className='theme-transition flex-1 border-primary/20 bg-transparent hover:scale-[1.02] hover:border-primary hover:bg-primary/5'
                     size='lg'
                     disabled={!userName || !orgName}
                   >
-                    <Mail className='w-4 h-4 mr-2' />
+                    <Mail className='mr-2 h-4 w-4' />
                     Contact Support
                   </Button>
                 </div>
@@ -450,8 +386,8 @@ I look forward to hearing from you`)
           <div className='space-y-8'>
             <Card className='gradient-card theme-transition hover:shadow-lg'>
               <CardHeader className='pb-4'>
-                <CardTitle className='flex items-center gap-2 text-xl font-[family-name:var(--font-heading)]'>
-                  <Eye className='w-5 h-5 text-primary' />
+                <CardTitle className='flex items-center gap-2 font-[family-name:var(--font-heading)] text-xl'>
+                  <Eye className='h-5 w-5 text-primary' />
                   Live Preview
                 </CardTitle>
                 <CardDescription className='text-base'>
@@ -459,7 +395,7 @@ I look forward to hearing from you`)
                 </CardDescription>
               </CardHeader>
               <CardContent className='p-6'>
-                <div className='bg-gray-100 rounded-xl p-4'>
+                <div className='rounded-xl bg-gray-100 p-4'>
                   <div className='mx-auto max-w-sm rounded-2xl'>
                     <PreviewPane colors={colors} />
                   </div>

@@ -1,20 +1,20 @@
-FROM oven/bun:1.4.2 AS build
+FROM oven/bun:1.4.4@sha256:1d22548f177f4ff38e0c15baa3c2c46c6c2060ba2d1bc573bb4720b407548f1d AS build
 WORKDIR /app
-ENV HUSKY=0 NEXT_TELEMETRY_DISABLED=1 NEXT_STATIC_EXPORT=1
+ENV HUSKY=0 ASTRO_TELEMETRY_DISABLED=1
 COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile
-COPY . .
-RUN bun run typecheck && bun run format:check && bun run build
+RUN BUN_CONFIG_MAX_HTTP_REQUESTS=16 bun install --frozen-lockfile
+COPY astro.config.mjs tsconfig.json ./
+COPY src ./src
+RUN bun run build
 
-FROM nginx:stable-alpine AS runtime
+FROM caddy:2.11.7@sha256:504a44d7d74bd2bc28a66afc4774912fc21223ca8a67734af1c54ab2f999b489
+# Port 8080 needs no privileged bind capability; drop the upstream file capability
+# so the binary can execute with the runtime capability set empty.
+RUN setcap -r /usr/bin/caddy
+COPY --from=build /app/dist /srv
+COPY Caddyfile /etc/caddy/Caddyfile
 ARG THEME_GENERATOR_REVISION=development
-LABEL org.opencontainers.image.source="https://github.com/kylescudder/theme-generator" \
-      org.opencontainers.image.revision="${THEME_GENERATOR_REVISION}"
-COPY deploy/nginx.conf /etc/nginx/nginx.conf
-RUN printf '%s' "$THEME_GENERATOR_REVISION" | grep -Eq '^([0-9a-f]{40}|development)$' \
-    && printf 'add_header X-Theme-Generator-Revision "%s" always;\n' "$THEME_GENERATOR_REVISION" > /etc/nginx/revision.conf
-COPY --from=build /app/out /usr/share/nginx/html
-USER nginx
+ENV THEME_GENERATOR_REVISION=${THEME_GENERATOR_REVISION}
+USER 1000:1000
 EXPOSE 8080
-ENTRYPOINT ["nginx"]
-CMD ["-g", "daemon off;"]
+CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
