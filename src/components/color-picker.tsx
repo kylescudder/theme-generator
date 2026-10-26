@@ -1,6 +1,4 @@
-'use client'
-
-import React, { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, type ChangeEvent } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Sparkles } from 'lucide-react'
@@ -63,7 +61,7 @@ export function ColorPicker({
 
   // Manual hex input (instant, no deferral needed)
   const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e: ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value
       setLocalColor(value)
       setPendingColor(value)
@@ -85,15 +83,15 @@ export function ColorPicker({
     <div className='space-y-3'>
       <Label
         htmlFor={id}
-        className='text-sm font-medium text-foreground flex items-center gap-2'
+        className='flex items-center gap-2 text-sm font-medium text-foreground'
       >
-        {isMain && <Sparkles className='w-4 h-4 text-primary' />}
+        {isMain && <Sparkles className='h-4 w-4 text-primary' />}
         {label}
       </Label>
 
       <div className='flex flex-col gap-3 sm:items-start'>
         <div
-          className='relative select-none touch-auto cursor-pointer w-full'
+          className='relative w-full cursor-pointer touch-auto select-none'
           style={{ pointerEvents: 'auto' }}
           onMouseDown={handleDragStart}
           onTouchStart={handleDragStart}
@@ -101,7 +99,7 @@ export function ColorPicker({
           onTouchEnd={handleDragEnd}
           onMouseLeave={handleDragEnd} // Handle if mouse leaves during drag
         >
-          <div className='border-2 border-border rounded-lg p-2 bg-background'>
+          <div className='rounded-lg border-2 border-border bg-background p-2'>
             <HexColorPicker
               color={localColor}
               onChange={handleColorChange}
@@ -109,7 +107,7 @@ export function ColorPicker({
             />
           </div>
           {isMain && (
-            <div className='absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full border-2 border-background' />
+            <div className='absolute -top-1 -right-1 h-3 w-3 rounded-full border-2 border-background bg-primary' />
           )}
         </div>
 
@@ -118,12 +116,12 @@ export function ColorPicker({
           type='text'
           value={localColor}
           onChange={handleInputChange}
-          className='w-full sm:flex-1 font-mono text-sm transition-colors focus:border-primary'
+          className='w-full font-mono text-sm transition-colors focus:border-primary sm:flex-1'
           placeholder='#000000'
         />
       </div>
 
-      <p className='text-xs text-muted-foreground leading-relaxed'>
+      <p className='text-xs leading-relaxed text-muted-foreground'>
         {description}
       </p>
     </div>

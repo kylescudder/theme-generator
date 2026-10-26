@@ -5,8 +5,6 @@ services:
     init: true
     restart: unless-stopped
     read_only: true
-    tmpfs:
-      - /tmp:size=16m,mode=1777
     cap_drop: [ALL]
     security_opt:
       - no-new-privileges:true
@@ -18,10 +16,7 @@ services:
         aliases: [theme-generator]
     healthcheck:
       test:
-        [
-          CMD-SHELL,
-          "wget -qO- http://127.0.0.1:8080/ | grep -q 'mpro5 Theme Generator'"
-        ]
+        ['CMD', 'wget', '--quiet', '--spider', 'http://127.0.0.1:8080/healthz']
       interval: 15s
       timeout: 5s
       retries: 3

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Verify a running release's identity, assets, caching and missing routes."""
 from html.parser import HTMLParser
+import json
 import re
 import sys
 import time
@@ -15,7 +16,7 @@ class Assets(HTMLParser):
 
     def handle_starttag(self, tag, attributes):
         for key, value in attributes:
-            if key in ('src', 'href') and value and value.startswith('/_next/'):
+            if key in ('src', 'href') and value and value.startswith('/_astro/'):
                 self.urls.add(value)
 
 
@@ -28,7 +29,7 @@ def verify(base, revision):
             with urlopen(base + '/healthz', timeout=2) as response:
                 assert response.headers['X-Theme-Generator-Revision'] == revision
                 assert response.headers['Cache-Control'] == 'no-store'
-                assert response.read() == b'ok\n'
+                assert json.load(response) == {'ok': True, 'revision': revision}
             break
         except (URLError, ConnectionError):
             if attempt == 39:
@@ -46,7 +47,7 @@ def verify(base, revision):
         with urlopen(base + path, timeout=10) as response:
             assert response.status == 200 and response.read(), path
             assert 'immutable' in response.headers.get('Cache-Control', ''), path
-    for path in ('/missing-theme-route', '/_next/static/missing.js'):
+    for path in ('/missing-theme-route', '/_astro/missing.js'):
         try:
             urlopen(base + path, timeout=10)
             raise AssertionError('Expected 404 for ' + path)

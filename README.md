@@ -6,16 +6,27 @@ the app does not require a database or application secrets.
 
 ## Development
 
-Use Bun 1.4.2, matching `.bun-version` and the Docker build:
+This is an Astro site. The generator is a React island rendered in the browser,
+because the theme is read from local storage. Use Bun 1.4.4, matching
+`.bun-version` and the Docker build:
 
 ```sh
 bun install --frozen-lockfile
 bun run dev
 ```
 
-`bun run build` and `bun run start` retain the regular Next.js server workflow.
-The Docker build sets `NEXT_STATIC_EXPORT=1` to export the app as static files,
-served by an unprivileged Nginx container.
+| Script              | Purpose                                    |
+| ------------------- | ------------------------------------------ |
+| `bun run typecheck` | `astro check`                              |
+| `bun run test`      | Colour contrast, shade and tint unit tests |
+| `bun run test:e2e`  | Playwright journeys against `bun run dev`  |
+| `bun run build`     | Static output in `dist/`                   |
+| `bun run format`    | Prettier with the house style              |
+
+`bun run build` writes static files to `dist/`. The Docker image serves them from
+an unprivileged Caddy container, which also answers `/healthz` with
+`{"ok":true,"revision":"<sha>"}` and sends `X-Theme-Generator-Revision` on every
+response.
 
 ## Host deployment
 
