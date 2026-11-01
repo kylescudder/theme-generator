@@ -6,7 +6,7 @@ name: theme-generator-deploy-hook
 
 services:
   deploy-hook:
-    image: oven/bun:1.4.2
+    image: oven/bun:1.4.4
     command: ['bun', '/app/server.mjs']
     restart: unless-stopped
     user: '${DEPLOY_HOOK_USER:?set DEPLOY_HOOK_USER to the queue owner uid:gid}'
