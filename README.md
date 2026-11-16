@@ -15,13 +15,13 @@ bun install --frozen-lockfile
 bun run dev
 ```
 
-| Script              | Purpose                                    |
-| ------------------- | ------------------------------------------ |
-| `bun run typecheck` | `astro check`                              |
-| `bun run test`      | Colour contrast, shade and tint unit tests |
-| `bun run test:e2e`  | Playwright journeys against `bun run dev`  |
-| `bun run build`     | Static output in `dist/`                   |
-| `bun run format`    | Prettier with the house style              |
+| Script              | Purpose                                                                                 |
+| ------------------- | --------------------------------------------------------------------------------------- |
+| `bun run typecheck` | `astro check`                                                                           |
+| `bun run test`      | Colour contrast, shade and tint unit tests                                              |
+| `bun run test:e2e`  | Playwright journeys against a fresh dev server on port 44321 (the PR **E2E tests** job) |
+| `bun run build`     | Static output in `dist/`                                                                |
+| `bun run format`    | Prettier with the house style                                                           |
 
 `bun run build` writes static files to `dist/`. The Docker image serves them from
 an unprivileged Caddy container, which also answers `/healthz` with
